@@ -98,6 +98,7 @@ extension SetViewController : UITableViewDataSource {
     if let data = self.data?[indexPath.row] {
       
       /// Background image
+      cell.imgBackground?.image = nil
       if let urlString = data.imageURLs.first?.url,
         let url = URL(string: urlString) {
         cell.imgBackground?.af_setImage(withURL: url)

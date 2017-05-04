@@ -62,18 +62,21 @@ class Database {
         return
       }
       
-      /// Convert API objects to Realm Objects
-      let movies : [Movie] = apiSets.map({ Movie.initMovie(from: $0) })
-      guard self.saveRealm(save: movies) else {
-        self.log.error("Unable to save objects to default Realm")
-        return
+      API.instance.updateSets(sets: apiSets) { (isSuccess, updatedSets) in
+        /// Convert API objects to Realm Objects
+        let movies : [Movie] = updatedSets.map({ Movie.initMovie(from: $0) })
+        guard self.saveRealm(save: movies) else {
+          self.log.error("Unable to save objects to default Realm")
+          return
+        }
+        
+        /// Set User Defaults
+        UserDefaults.standard.set(true, forKey: fetchComplete)
+        
+        /// Default
+        completion(self.fetchMovies(sorted: true))
       }
       
-      /// Set User Defaults
-      UserDefaults.standard.set(true, forKey: fetchComplete)
-      
-      /// Default
-      completion(self.fetchMovies(sorted: true))
     }
     
   }

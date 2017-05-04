@@ -56,9 +56,56 @@ class API {
    - parameter set: The APISet to convert
    - returns: APISet
    */
+  func getSetContent (set : APISet, completion : @escaping (_ isSuccess : Bool, _ set : APISet?) -> Void) {
+    
+    guard let apiString = set.imageURLs.first else {
+      return
+    }
+    log.verbose("Getting image information with URL \(apiString)")
+    
+    
+    /// Request
+    Alamofire.request("\(self.baseURL)\(apiString)").validate().responseJSON { response in
+      
+      self.log.verbose("Response for getting set image \(response.response.debugDescription)")
+      
+      switch response.result {
+      case .success(let data):
+        guard let url = JSON(data)["url"].string else {
+          completion(false, nil)
+          return
+        }
+        let newSet = APISet(uid: set.uid, title: set.title, setDescription: set.setDescription, setDescriptionFormatted: set.setDescriptionFormatted, summary: set.summary, imageURLs: [url])
+        completion(true, newSet)
+      case .failure(let error):
+        self.log.error("Invalid response status updating sets: \(error.localizedDescription)")
+        completion(false, nil)
+      }
+    }
+  }
+  
+  func updateSets (sets : [APISet], completion : @escaping (_ isSuccess : Bool, _ sets : [APISet]) -> Void) {
+    var updatedSets = [APISet]()
+    for set in sets {
+      self.updateSet(set: set) { (isSuccess, updatedSet) in
+        updatedSets.append(updatedSet ?? set)
+        if updatedSets.count == sets.count {
+          completion(true, updatedSets)
+        }
+      }
+    }
+  }
+  
+  /**
+   Updates an APISet object from the /sets/ endpoint to a full formed APISet with correct images
+   
+   - parameter set: The APISet to convert
+   - returns: APISet
+   */
   func updateSet (set : APISet, completion : @escaping (_ isSuccess : Bool, _ set : APISet?) -> Void) {
     
     guard let apiString = set.imageURLs.first else {
+      completion(false, nil)
       return
     }
     log.verbose("Getting image information with URL \(apiString)")

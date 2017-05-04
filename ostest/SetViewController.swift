@@ -26,7 +26,7 @@ final class SetViewController : UIViewController {
   let log = SwiftyBeaver.self
   
   /// The movies set data
-  private var data : Results<Movie>?
+  fileprivate var data : Results<Movie>?
   
   /**
    Setup the view
@@ -47,10 +47,15 @@ final class SetViewController : UIViewController {
    - parameter isLoading
    */
   func setupLoading (isLoading : Bool) {
+    self.activity?.startAnimating()
     UIView.animate(withDuration: 0.3, delay: 0.0, options: .beginFromCurrentState, animations: {
       self.activity?.alpha = isLoading ? 1.0 : 0.0
       self.tblView?.alpha = isLoading ? 0.0 : 1.0
-    }) { (_) in }
+    }) { (_) in
+      if !isLoading {
+        self.activity?.stopAnimating()
+      }
+    }
   }
   
   
@@ -79,7 +84,7 @@ extension SetViewController : UITableViewDataSource {
   }
   
   func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-    return 1
+    return self.data?.count ?? 0
   }
   
   func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {

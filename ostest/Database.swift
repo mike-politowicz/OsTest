@@ -40,8 +40,8 @@ class Database {
     log.verbose("DB Updating sets")
     
     let fetchComplete = "FetchComplete"
-    if UserDefaults.standard.object(forKey: fetchComplete) != nil {
-      log.debug("DB already fetched API objects")
+    if UserDefaults.standard.bool(forKey: fetchComplete) {
+     log.debug("DB already fetched API objects")
       completion(self.fetchMovies(sorted: true))
       return
     }
@@ -64,10 +64,13 @@ class Database {
       
       /// Convert API objects to Realm Objects
       let movies : [Movie] = apiSets.map({ Movie.initMovie(from: $0) })
+      guard self.saveRealm(save: movies) else {
+        self.log.error("Unable to save objects to default Realm")
+        return
+      }
       
       /// Set User Defaults
-      UserDefaults.standard.set("Yes", forKey: fetchComplete)
-      UserDefaults.standard.synchronize()
+      UserDefaults.standard.set(true, forKey: fetchComplete)
       
       /// Default
       completion(self.fetchMovies(sorted: true))
@@ -94,11 +97,11 @@ class Database {
    Save the default Realm
    */
   func saveRealm (save objects : [Object]) -> Bool {
-    
+    let realm = self.defaultRealm()
     do {
-      try self.defaultRealm()?.write {
+      try realm?.write {
         for thisObject in objects {
-          self.defaultRealm()?.add(thisObject)
+          realm?.add(thisObject)
         }
         self.log.verbose("Realm added objects")
       }
@@ -106,7 +109,7 @@ class Database {
       return false
     }
     
-    return false
+    return true
   }
   
 }

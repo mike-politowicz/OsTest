@@ -23,7 +23,7 @@ class API {
   let log = SwiftyBeaver.self
   
   /// The base URL
-  let baseURL = "http://featore-code-test.skylurk-cms.qa.aws.ostmodern.co.uk:8080"
+  let baseURL = "http://feature-code-test.skylark-cms.qa.aws.ostmodern.co.uk:8000"
   
   /**
    Get sets
@@ -34,13 +34,18 @@ class API {
     log.verbose("Getting sets with URL \(apiString)")
     
     /// Request
-    Alamofire.request(apiString).responseJSON { response in
+    Alamofire.request(apiString).validate().responseJSON { response in
       
       self.log.verbose("Response for getting sets \(response.response.debugDescription)")
       
-      if let _ = response.result.value {
+      switch response.result {
+      case .success(let data):
+        completion(true, APISet.parse(JSON(data)))
+      case .failure(let error):
+        self.log.error("Invalid response status getting sets: \(error.localizedDescription)")
         completion(false, nil)
       }
+
     }
     
   }
@@ -60,21 +65,20 @@ class API {
     
     
     /// Request
-    Alamofire.request("\(self.baseURL)\(apiString)").responseJSON { response in
+    Alamofire.request("\(self.baseURL)\(apiString)").validate().responseJSON { response in
       
       self.log.verbose("Response for getting set image \(response.response.debugDescription)")
       
-      if let result = response.result.value {
-        let json = JSON(result)
-        guard let url = json["url"].string else {
+      switch response.result {
+      case .success(let data):
+        guard let url = JSON(data)["url"].string else {
           completion(false, nil)
           return
         }
-        
         let newSet = APISet(uid: set.uid, title: set.title, setDescription: set.setDescription, setDescriptionFormatted: set.setDescriptionFormatted, summary: set.summary, imageURLs: [url])
         completion(true, newSet)
-        
-      } else {
+      case .failure(let error):
+        self.log.error("Invalid response status updating sets: \(error.localizedDescription)")
         completion(false, nil)
       }
     }

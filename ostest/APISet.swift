@@ -17,22 +17,22 @@ import SwiftyBeaver
 struct APISet {
   
   /// The UID
-  let uid : String!
+  let uid : String
   
   /// The title of the set
-  let title : String!
+  let title : String
   
   /// Set description
-  let setDescription : String!
+  let setDescription : String
   
   /// Set description formatted
-  let setDescriptionFormatted : String!
+  let setDescriptionFormatted : String
   
   /// Set summary
-  let summary : String!
+  let summary : String
   
   /// Image URLs
-  let imageURLs : [String]!
+  let imageURLs : [String]
   
   /**
    A basic initialisers for the API Set object

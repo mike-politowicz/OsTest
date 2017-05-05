@@ -20,10 +20,10 @@ class API {
   static let instance = API()
   
   /// Log
-  let log = SwiftyBeaver.self
+  fileprivate let log = SwiftyBeaver.self
   
   /// The base URL
-  let baseURL = "http://feature-code-test.skylark-cms.qa.aws.ostmodern.co.uk:8000"
+  fileprivate let baseURL = "http://feature-code-test.skylark-cms.qa.aws.ostmodern.co.uk:8000"
   
   /**
    Get sets
@@ -51,46 +51,46 @@ class API {
   }
   
   /**
-   Updates an APISet object from the /sets/ endpoint to a full formed APISet with correct images
+   Updates APIEpisode objects from the /sets/ endpoint
    
-   - parameter set: The APISet to convert
-   - returns: APISet
+   - parameter set: The APISet to get content from
+   - returns: [APIEpisode]?
    */
-  func getSetContent (set : APISet, completion : @escaping (_ isSuccess : Bool, _ set : APISet?) -> Void) {
+  func getEpisodes (setUID : String, completion : @escaping (_ isSuccess : Bool, _ set : [APIEpisode]?) -> Void) {
     
-    guard let apiString = set.imageURLs.first else {
-      return
-    }
+    let apiString = "\(baseURL)/api/sets/\(setUID)/items/"
+
     log.verbose("Getting image information with URL \(apiString)")
     
-    
     /// Request
-    Alamofire.request("\(self.baseURL)\(apiString)").validate().responseJSON { response in
+    Alamofire.request(apiString).validate().responseJSON { response in
       
-      self.log.verbose("Response for getting set image \(response.response.debugDescription)")
+      self.log.verbose("Response for getting sets \(response.response.debugDescription)")
       
       switch response.result {
       case .success(let data):
-        guard let url = JSON(data)["url"].string else {
-          completion(false, nil)
+        guard let apiEpisodes = APIEpisode.parse(JSON(data)) else {
+          completion(true, nil)
           return
         }
-        let newSet = APISet(uid: set.uid, title: set.title, setDescription: set.setDescription, setDescriptionFormatted: set.setDescriptionFormatted, summary: set.summary, imageURLs: [url])
-        completion(true, newSet)
+        self.updateEpisodes(episodes: apiEpisodes) { (isSuccess, updatedEpisodes) in
+          completion(true, updatedEpisodes)
+        }
       case .failure(let error):
-        self.log.error("Invalid response status updating sets: \(error.localizedDescription)")
+        self.log.error("Invalid response status getting set content: \(error.localizedDescription)")
         completion(false, nil)
       }
     }
   }
   
-  func updateSets (sets : [APISet], completion : @escaping (_ isSuccess : Bool, _ sets : [APISet]) -> Void) {
-    var updatedSets = [APISet]()
-    for set in sets {
-      self.updateSet(set: set) { (isSuccess, updatedSet) in
-        updatedSets.append(updatedSet ?? set)
-        if updatedSets.count == sets.count {
-          completion(true, updatedSets)
+  
+  fileprivate func updateEpisodes (episodes : [APIEpisode], completion : @escaping (_ isSuccess : Bool, _ episodes : [APIEpisode]) -> Void) {
+    var updatedEpisodes = [APIEpisode]()
+    for episode in episodes {
+      self.updateEpisode(episode: episode) { (isSuccess, updatedEpisode) in
+        updatedEpisodes.append(updatedEpisode ?? episode)
+        if updatedEpisodes.count == episodes.count {
+          completion(true, updatedEpisodes)
         }
       }
     }
@@ -102,30 +102,81 @@ class API {
    - parameter set: The APISet to convert
    - returns: APISet
    */
-  func updateSet (set : APISet, completion : @escaping (_ isSuccess : Bool, _ set : APISet?) -> Void) {
+  fileprivate func updateEpisode (episode : APIEpisode, completion : @escaping (_ isSuccess : Bool, _ set : APIEpisode?) -> Void) {
     
-    guard let apiString = set.imageURLs.first else {
+    /// Guard episode content URL
+    guard episode.contentURL != "" else {
+      log.warning("No content URL for episode UID: '\(episode.uid)'")
       completion(false, nil)
       return
     }
-    log.verbose("Getting image information with URL \(apiString)")
+    let apiContentString = self.baseURL + episode.contentURL
+    log.verbose("Getting episode information with URL \(apiContentString)")
     
-    
-    /// Request
-    Alamofire.request("\(self.baseURL)\(apiString)").validate().responseJSON { response in
-      
-      self.log.verbose("Response for getting set image \(response.response.debugDescription)")
+    /// Request - episode content
+    Alamofire.request(apiContentString).validate().responseJSON { response in
+      self.log.verbose("Response for getting episode content \(response.response.debugDescription)")
       
       switch response.result {
+        
+      /// Successful request - episode content
       case .success(let data):
-        guard let url = JSON(data)["url"].string else {
-          completion(false, nil)
+        guard let title = JSON(data)["title"].string, let synopsis = JSON(data)["synopsis"].string, let jsonImageURLs = JSON(data)["image_urls"].array else {
+          self.log.error("Invalid episode content data")
+          completion(true, nil)
           return
         }
-        let newSet = APISet(uid: set.uid, title: set.title, setDescription: set.setDescription, setDescriptionFormatted: set.setDescriptionFormatted, summary: set.summary, imageURLs: [url])
-        completion(true, newSet)
-      case .failure(let error):
-        self.log.error("Invalid response status updating sets: \(error.localizedDescription)")
+        var imageURLs = [String]()
+        for thisImageURL in jsonImageURLs {
+          if let url = thisImageURL.string {
+            imageURLs.append(url)
+          }
+        }
+        var newEpisode = APIEpisode.init(uid: episode.uid,
+                                         contentURL: episode.contentURL,
+                                         position: episode.position,
+                                         title: title,
+                                         synopsis: synopsis,
+                                         imageURLs: imageURLs) //["/api/images/imag_fcdf67481d8147e6844d838f4112fcaa/", "/api/images/imag_fcdf67481d8147e6844d838f4112fcab/"])
+        
+        // Get episode image URL
+        guard let apiImageURL = newEpisode.imageURLs.first else {
+          completion(true, newEpisode)
+          return
+        }
+        let apiImageString = self.baseURL + apiImageURL
+        self.log.verbose("Getting image information with URL \(apiImageString)")
+        
+        /// Request - image URL
+        Alamofire.request(apiImageString).validate().responseJSON { response in
+          self.log.verbose("Response for getting set image \(response.response.debugDescription)")
+          
+          switch response.result {
+            
+          /// Successful request - image URL
+          case .success(let data):
+            guard let url = JSON(data)["url"].string else {
+              completion(true, newEpisode)
+              return
+            }
+            newEpisode = APIEpisode.init(uid: episode.uid,
+                                         contentURL: episode.contentURL,
+                                         position: episode.position,
+                                         title: title,
+                                         synopsis: synopsis,
+                                         imageURLs: [url])
+            completion(true, newEpisode)
+            
+          /// Failed request - image URL
+          case .failure(let error):
+            self.log.error("Invalid response status updating episodes: \(error.localizedDescription)")
+            completion(false, newEpisode)
+          }
+        }
+        
+        /// Failed request - episode content
+        case .failure(let error):
+        self.log.error("Invalid response status updating episodes: \(error.localizedDescription)")
         completion(false, nil)
       }
     }

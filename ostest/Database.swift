@@ -19,12 +19,12 @@ class Database {
   static let instance = Database()
   
   /// Log
-  let log = SwiftyBeaver.self
+  fileprivate let log = SwiftyBeaver.self
   
   /**
    The default realm
    */
-  func defaultRealm () -> Realm? {
+  fileprivate func defaultRealm () -> Realm? {
     do {
       return try Realm()
     } catch {
@@ -38,12 +38,12 @@ class Database {
    */
   func fetchSets (completion : @escaping (_ movies : Results<Movie>?) -> Void) {
     log.verbose("DB Updating sets")
+    let fetchCompleteKey = "FetchComplete"
+    let fetchComplete = UserDefaults.standard.bool(forKey: fetchCompleteKey)
     
-    let fetchComplete = "FetchComplete"
-    if UserDefaults.standard.bool(forKey: fetchComplete) {
-     log.debug("DB already fetched API objects")
+    if fetchComplete {
+      log.debug("DB already fetched API set objects")
       completion(self.fetchMovies(sorted: true))
-      return
     }
     
     /// Update the database
@@ -62,16 +62,16 @@ class Database {
         return
       }
       
-      API.instance.updateSets(sets: apiSets) { (isSuccess, updatedSets) in
-        /// Convert API objects to Realm Objects
-        let movies : [Movie] = updatedSets.map({ Movie.initMovie(from: $0) })
-        guard self.saveRealm(save: movies) else {
-          self.log.error("Unable to save objects to default Realm")
-          return
-        }
-        
+      /// Convert API objects to Realm Objects
+      let movies : [Movie] = apiSets.map({ Movie.initMovie(from: $0) })
+      guard self.saveRealm(save: movies) else {
+        self.log.error("Unable to save objects to default Realm")
+        return
+      }
+      
+      if !fetchComplete {
         /// Set User Defaults
-        UserDefaults.standard.set(true, forKey: fetchComplete)
+        UserDefaults.standard.set(true, forKey: fetchCompleteKey)
         
         /// Default
         completion(self.fetchMovies(sorted: true))
@@ -82,9 +82,63 @@ class Database {
   }
   
   /**
+   Fetch episodes from the API server
+   */
+  func fetchEpisodes (setTitle: String, completion : @escaping (_ episodes : Results<Episode>?) -> Void) {
+    log.verbose("DB Updating episodes")
+    
+    guard let movie = fetchMovies(sorted: true)?.filter("title == '\(setTitle)'").first else {
+      self.log.error("DB could not find \"\(setTitle)\" movie object")
+      return
+    }
+    
+    let fetchCompleteKey = "FetchComplete-\(setTitle)"
+    let fetchComplete = UserDefaults.standard.bool(forKey: fetchCompleteKey)
+    
+    if fetchComplete {
+      log.debug("DB already fetched API episode objects for '\(setTitle)' set")
+      completion(self.fetchRealmEpisodes(sorted: true))
+    }
+    
+    /// Update the database
+    API.instance.getEpisodes(setUID: movie.uid) { (isComplete, episodes) in
+      self.log.verbose("DB Updated episodes with completion outcome \(isComplete)")
+      
+      /// Check for the error
+      if isComplete == false {
+        self.log.error("There was an error updating the DB with results from the API")
+        return
+      }
+      
+      /// Guard episodes
+      guard let apiEpisodes = episodes else {
+        self.log.error("DB found the API episode objects as nil")
+        return
+      }
+      
+      /// Convert API objects to Realm Objects
+      let realmEpisodes : [Episode] = apiEpisodes.map({ Episode.initEpisode(from: $0) })
+      guard self.saveRealm(save: realmEpisodes) else {
+        self.log.error("Unable to save objects to default Realm")
+        return
+      }
+      
+      if !fetchComplete {
+        /// Set User Defaults
+        UserDefaults.standard.set(true, forKey: fetchCompleteKey)
+        
+        /// Default
+        completion(self.fetchRealmEpisodes(sorted: true))
+      }
+      
+    }
+    
+  }
+  
+  /**
    Fetch from the default Realm
    */
-  func fetchMovies(sorted sort : Bool) -> Results<Movie>? {
+  fileprivate func fetchMovies(sorted sort : Bool) -> Results<Movie>? {
     
     var movies = self.defaultRealm()?.objects(Movie.self)
     
@@ -97,16 +151,31 @@ class Database {
   }
   
   /**
+   Fetch from the default Realm
+   */
+  fileprivate func fetchRealmEpisodes(sorted sort : Bool) -> Results<Episode>? {
+    
+    var episodes = self.defaultRealm()?.objects(Episode.self)
+    
+    if sort {
+      episodes = episodes?.sorted(byKeyPath: "position")
+    }
+    
+    /// Default
+    return episodes
+  }
+  
+  /**
    Save the default Realm
    */
-  func saveRealm (save objects : [Object]) -> Bool {
+  fileprivate func saveRealm (save objects : [Object]) -> Bool {
     let realm = self.defaultRealm()
     do {
       try realm?.write {
         for thisObject in objects {
-          realm?.add(thisObject)
+          realm?.add(thisObject, update: true)
         }
-        self.log.verbose("Realm added objects")
+        self.log.verbose("Realm added / updated objects")
       }
     } catch {
       return false

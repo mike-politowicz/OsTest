@@ -136,6 +136,22 @@ class Database {
   }
   
   /**
+   Set favourite value for episode
+   */
+  func changeFavouriteFor(episode: Episode, isFavourite: Bool) {
+    let realm = self.defaultRealm()
+    do {
+      try realm?.write {
+        episode.isFavourite = isFavourite
+        self.log.verbose("Realm episode favourite value updated")
+      }
+    } catch {
+      self.log.error("Realm unable to update episode favourite value")
+      return
+    }
+  }
+  
+  /**
    Fetch from the default Realm
    */
   fileprivate func fetchMovies(sorted sort : Bool) -> Results<Movie>? {
@@ -153,7 +169,7 @@ class Database {
   /**
    Fetch from the default Realm
    */
-  fileprivate func fetchRealmEpisodes(sorted sort : Bool) -> Results<Episode>? {
+  func fetchRealmEpisodes(sorted sort : Bool) -> Results<Episode>? {
     
     var episodes = self.defaultRealm()?.objects(Episode.self)
     
@@ -166,14 +182,46 @@ class Database {
   }
   
   /**
-   Save the default Realm
+   Save the default Realm movies
    */
-  fileprivate func saveRealm (save objects : [Object]) -> Bool {
+  fileprivate func saveRealm (save movies : [Movie]) -> Bool {
     let realm = self.defaultRealm()
     do {
       try realm?.write {
-        for thisObject in objects {
-          realm?.add(thisObject, update: true)
+        if let oldMovies = realm?.objects(Movie.self) {
+          realm?.delete(oldMovies)
+        }
+        for movie in movies {
+          realm?.add(movie, update: true)
+        }
+        self.log.verbose("Realm added / updated objects")
+      }
+    } catch {
+      return false
+    }
+    return true
+  }
+  
+  /**
+   Save the default Realm episodes
+   */
+  fileprivate func saveRealm (save episodes : [Episode]) -> Bool {
+    let realm = self.defaultRealm()
+    do {
+      try realm?.write {
+        let newEpisodeUIDs = episodes.map() { $0.uid }
+        if let oldEpisodes = realm?.objects(Episode.self) {
+          for oldEpisode in oldEpisodes {
+            if !newEpisodeUIDs.contains(oldEpisode.uid) {
+              realm?.delete(oldEpisode)
+            }
+          }
+        }
+        for episode in episodes {
+          if let oldEpisode = realm?.object(ofType: Episode.self, forPrimaryKey: episode.uid) {
+            episode.isFavourite = oldEpisode.isFavourite
+          }
+          realm?.add(episode, update: true)
         }
         self.log.verbose("Realm added / updated objects")
       }

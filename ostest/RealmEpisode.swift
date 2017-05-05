@@ -22,6 +22,8 @@ class Episode : Object {
   
   dynamic var position : Int = 0
   
+  dynamic var isFavourite : Bool = false
+  
   var imageURLs = List<Image>()
   
   

@@ -22,8 +22,11 @@ final class EpisodeListViewController : UIViewController {
   /// Activity loader for the table view
   @IBOutlet private weak var activity : UIActivityIndicatorView?
   
+  /// Pull-to-refresh control
+  fileprivate var refreshControl = UIRefreshControl()
+  
   /// Log
-  let log = SwiftyBeaver.self
+  fileprivate let log = SwiftyBeaver.self
   
   /// The episode data
   fileprivate var data : Results<Episode>?
@@ -37,7 +40,13 @@ final class EpisodeListViewController : UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     
+    /// Setup pull-to-refresh
+    refreshControl.attributedTitle = NSAttributedString(string: "Pull to refresh")
+    refreshControl.addTarget(self, action: #selector(refreshEpisodes), for: .valueChanged)
+    self.tblView?.addSubview(refreshControl)
+    
     /// Setup view for loading
+    self.tblView?.alpha = 0.0
     self.setupLoading(isLoading: true)
     
     /// Call to setup the data
@@ -49,7 +58,7 @@ final class EpisodeListViewController : UIViewController {
    
    - parameter isLoading
    */
-  func setupLoading (isLoading : Bool) {
+  fileprivate func setupLoading (isLoading : Bool) {
     self.activity?.startAnimating()
     UIView.animate(withDuration: 0.3, delay: 0.0, options: .beginFromCurrentState, animations: {
       self.activity?.alpha = isLoading ? 1.0 : 0.0
@@ -65,7 +74,7 @@ final class EpisodeListViewController : UIViewController {
   /**
    Sets up the data for the table view
    */
-  func setupData () {
+  fileprivate func setupData () {
     Database.instance.fetchSets() { _ in
       Database.instance.fetchEpisodes(setTitle: "Home") { (episodes) in
         self.setupLoading(isLoading: false)
@@ -96,6 +105,14 @@ final class EpisodeListViewController : UIViewController {
           }
         }
         self.log.verbose("Episode count \(String(describing: episodes?.count))")
+      }
+    }
+  }
+  
+  func refreshEpisodes() {
+    Database.instance.fetchSets() { _ in
+      Database.instance.fetchEpisodes(setTitle: "Home") { _ in
+        self.refreshControl.endRefreshing()
       }
     }
   }

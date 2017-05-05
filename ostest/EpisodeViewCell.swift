@@ -32,22 +32,38 @@ class EpisodeViewCell : UITableViewCell {
   /// Favourite
   @IBOutlet weak var btnFavourite : UIButton?
   
+  /// Episode
+  fileprivate var episode: Episode?
+  
+  // Image URL
+  fileprivate var imageURLString: String = ""
   
   func configureWith(episode: Episode) {
+    self.episode = episode
     lblTitle?.text = episode.title
     lblDescription?.text = episode.synopsis
+    btnFavourite?.setImage(episode.isFavourite ? #imageLiteral(resourceName: "heart_red") : #imageLiteral(resourceName: "heart_grey"), for: .normal)
+    let urlString = episode.imageURLs.first?.url ?? ""
+    guard urlString != imageURLString else {
+      return
+    }
     if let urlString = episode.imageURLs.first?.url, let url = URL(string: urlString) {
+      self.imageURLString = urlString
       self.imgBackground?.isHidden = false
       self.viewImageFilter?.isHidden = false
       imgBackground?.af_setImage(withURL: url)
     } else {
+      self.imageURLString = ""
       imgBackground?.isHidden = true
       viewImageFilter?.isHidden = true
     }
   }
   
   @IBAction func btnFavouritePressed(_ sender: UIButton) {
-    //btnFavourite?.setImage(#imageLiteral(resourceName: "heart_red"), for: .normal)
+    if let episode = episode {
+      Database.instance.changeFavouriteFor(episode: episode, isFavourite: !episode.isFavourite)
+      btnFavourite?.setImage(episode.isFavourite ? #imageLiteral(resourceName: "heart_red") : #imageLiteral(resourceName: "heart_grey"), for: .normal)
+    }
   }
   
   

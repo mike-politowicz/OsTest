@@ -1,5 +1,5 @@
 //
-//  EpisodeViewController.swift
+//  EpisodeListViewController.swift
 //  
 //
 //  Created by Michael Politowicz on 5/4/17.
@@ -14,7 +14,7 @@ import SwiftyBeaver
 /**
  Shows the list of Sets
  */
-final class EpisodeViewController : UIViewController {
+final class EpisodeListViewController : UIViewController {
   
   /// Table View
   @IBOutlet private weak var tblView : UITableView?
@@ -99,13 +99,21 @@ final class EpisodeViewController : UIViewController {
       }
     }
   }
+  
+  override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+    super.prepare(for: segue, sender: sender)
+    if let episodeDetailsVC = segue.destination as? EpisodeDetailsViewController,
+      let selectedIndex = tblView?.indexPathForSelectedRow?.row {
+      episodeDetailsVC.episode = data?[selectedIndex]
+    }
+  }
 }
 
 
 /**
  Table View datasource
  */
-extension EpisodeViewController : UITableViewDataSource {
+extension EpisodeListViewController : UITableViewDataSource {
   
   func numberOfSections(in tableView: UITableView) -> Int {
     return 1
@@ -142,6 +150,11 @@ extension EpisodeViewController : UITableViewDataSource {
 /**
  Table view delegate
  */
-extension EpisodeViewController : UITableViewDelegate {
+extension EpisodeListViewController : UITableViewDelegate {
+  
+  func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    self.performSegue(withIdentifier: "segueShowEpisodeDetails", sender: self)
+    tableView.deselectRow(at: indexPath, animated: true)
+  }
   
 }

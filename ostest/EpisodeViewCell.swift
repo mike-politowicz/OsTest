@@ -20,33 +20,35 @@ class EpisodeViewCell : UITableViewCell {
   /// Image view for the background
   @IBOutlet weak var imgBackground : UIImageView?
   
+  /// Filter to darken background image
+  @IBOutlet weak var viewImageFilter: UIView?
+  
   /// The title label
   @IBOutlet weak var lblTitle : UILabel?
   
-  /// The text view to show the description
-  @IBOutlet weak var txtDescription : UITextView?
+  /// The description label
+  @IBOutlet weak var lblDescription: UILabel?
   
   /// Favourite
   @IBOutlet weak var btnFavourite : UIButton?
   
-  /// Episode
-  fileprivate var imageURL: URL?
   
   func configureWith(episode: Episode) {
     lblTitle?.text = episode.title
-    txtDescription?.text = episode.synopsis
-    if let urlString = episode.imageURLs.first?.url,
-      let url = URL(string: urlString) {
-      imageURL = url
-      imgBackground?.af_setImage(withURL: url, completion: { response in
-        if let imageURL = response.request?.url, imageURL != self.imageURL {
-          self.imgBackground?.image = nil
-        }
-      })
+    lblDescription?.text = episode.synopsis
+    if let urlString = episode.imageURLs.first?.url, let url = URL(string: urlString) {
+      self.imgBackground?.isHidden = false
+      self.viewImageFilter?.isHidden = false
+      imgBackground?.af_setImage(withURL: url)
     } else {
-      imageURL = nil
-      imgBackground?.image = nil
+      imgBackground?.isHidden = true
+      viewImageFilter?.isHidden = true
     }
   }
+  
+  @IBAction func btnFavouritePressed(_ sender: UIButton) {
+    //btnFavourite?.setImage(#imageLiteral(resourceName: "heart_red"), for: .normal)
+  }
+  
   
 }

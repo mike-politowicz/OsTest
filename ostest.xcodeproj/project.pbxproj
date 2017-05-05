@@ -20,9 +20,10 @@
 		00A3E23F1E649A67002482EE /* ostestTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A3E23E1E649A67002482EE /* ostestTests.swift */; };
 		00A3E24A1E649A67002482EE /* ostestUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 00A3E2491E649A67002482EE /* ostestUITests.swift */; };
 		139374CF792B15DB829089CE /* Pods_ostest_ostestUITests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2B951A46AB1EA30E1292E23A /* Pods_ostest_ostestUITests.framework */; };
+		3505BB641EBC1CAC005A2DB1 /* EpisodeDetailsViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3505BB631EBC1CAC005A2DB1 /* EpisodeDetailsViewController.swift */; };
 		35D68C3D1EBAE38100575B2F /* APIEpisode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D68C3C1EBAE38100575B2F /* APIEpisode.swift */; };
 		35D68C3F1EBB003400575B2F /* RealmEpisode.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D68C3E1EBB003400575B2F /* RealmEpisode.swift */; };
-		35D68C411EBB07B900575B2F /* EpisodeViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D68C401EBB07B900575B2F /* EpisodeViewController.swift */; };
+		35D68C411EBB07B900575B2F /* EpisodeListViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D68C401EBB07B900575B2F /* EpisodeListViewController.swift */; };
 		4BFB92DBBD4E96782A86EB30 /* Pods_ostest.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D7BF28D9EE44448429931BC8 /* Pods_ostest.framework */; };
 		ACC3CF098F399C5E3F527863 /* Pods_ostest_ostestTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F756F1915AE0240733C896DE /* Pods_ostest_ostestTests.framework */; };
 /* End PBXBuildFile section */
@@ -65,9 +66,10 @@
 		00A3E24B1E649A67002482EE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		1917A0C96A8826354AA5DBF1 /* Pods-ostest-ostestTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ostest-ostestTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ostest-ostestTests/Pods-ostest-ostestTests.debug.xcconfig"; sourceTree = "<group>"; };
 		2B951A46AB1EA30E1292E23A /* Pods_ostest_ostestUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ostest_ostestUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		3505BB631EBC1CAC005A2DB1 /* EpisodeDetailsViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeDetailsViewController.swift; sourceTree = "<group>"; };
 		35D68C3C1EBAE38100575B2F /* APIEpisode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = APIEpisode.swift; sourceTree = "<group>"; };
 		35D68C3E1EBB003400575B2F /* RealmEpisode.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = RealmEpisode.swift; sourceTree = "<group>"; };
-		35D68C401EBB07B900575B2F /* EpisodeViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeViewController.swift; sourceTree = "<group>"; };
+		35D68C401EBB07B900575B2F /* EpisodeListViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = EpisodeListViewController.swift; sourceTree = "<group>"; };
 		3A9500227F4973B51371FF74 /* Pods-ostest-ostestTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ostest-ostestTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ostest-ostestTests/Pods-ostest-ostestTests.release.xcconfig"; sourceTree = "<group>"; };
 		3F4787B16C76CAFF93B9AC72 /* Pods-ostest-ostestUITests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ostest-ostestUITests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-ostest-ostestUITests/Pods-ostest-ostestUITests.debug.xcconfig"; sourceTree = "<group>"; };
 		97C2584A38F140E42F9ED0C0 /* Pods-ostest-ostestUITests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ostest-ostestUITests.release.xcconfig"; path = "Pods/Target Support Files/Pods-ostest-ostestUITests/Pods-ostest-ostestUITests.release.xcconfig"; sourceTree = "<group>"; };
@@ -108,7 +110,8 @@
 		0025DE081E65D88D005C7363 /* View Controllers */ = {
 			isa = PBXGroup;
 			children = (
-				35D68C401EBB07B900575B2F /* EpisodeViewController.swift */,
+				35D68C401EBB07B900575B2F /* EpisodeListViewController.swift */,
+				3505BB631EBC1CAC005A2DB1 /* EpisodeDetailsViewController.swift */,
 			);
 			name = "View Controllers";
 			sourceTree = "<group>";
@@ -515,8 +518,9 @@
 				006314741E657A3100431015 /* API.swift in Sources */,
 				006314761E657A3B00431015 /* Database.swift in Sources */,
 				006314791E657DED00431015 /* APISet.swift in Sources */,
+				3505BB641EBC1CAC005A2DB1 /* EpisodeDetailsViewController.swift in Sources */,
 				35D68C3F1EBB003400575B2F /* RealmEpisode.swift in Sources */,
-				35D68C411EBB07B900575B2F /* EpisodeViewController.swift in Sources */,
+				35D68C411EBB07B900575B2F /* EpisodeListViewController.swift in Sources */,
 				0063147C1E65B84F00431015 /* RealmSet.swift in Sources */,
 				00A3E22A1E649A67002482EE /* AppDelegate.swift in Sources */,
 				35D68C3D1EBAE38100575B2F /* APIEpisode.swift in Sources */,

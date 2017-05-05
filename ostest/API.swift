@@ -51,12 +51,12 @@ class API {
   }
   
   /**
-   Updates APIEpisode objects from the /sets/ endpoint
+   Gets APIEpisode objects
    
-   - parameter set: The APISet to get content from
+   - parameter episode: The APIEpisode to get content from
    - returns: [APIEpisode]?
    */
-  func getEpisodes (setUID : String, completion : @escaping (_ isSuccess : Bool, _ set : [APIEpisode]?) -> Void) {
+  func getEpisodes (setUID : String, completion : @escaping (_ isSuccess : Bool, _ episodes : [APIEpisode]?) -> Void) {
     
     let apiString = "\(baseURL)/api/sets/\(setUID)/items/"
 
@@ -83,7 +83,12 @@ class API {
     }
   }
   
-  
+  /**
+   Updates multiple APIEpisode objects to full formed APIEpisodes with correct images and details
+   
+   - parameter episodes: The APIEpisodes to convert
+   - returns: [APIEpisode]
+   */
   fileprivate func updateEpisodes (episodes : [APIEpisode], completion : @escaping (_ isSuccess : Bool, _ episodes : [APIEpisode]) -> Void) {
     var updatedEpisodes = [APIEpisode]()
     for episode in episodes {
@@ -97,12 +102,12 @@ class API {
   }
   
   /**
-   Updates an APISet object from the /sets/ endpoint to a full formed APISet with correct images
+   Updates an APIEpisode object to a full formed APIEpisode with correct images and details
    
-   - parameter set: The APISet to convert
-   - returns: APISet
+   - parameter episode: The APIEpisode to convert
+   - returns: APIEpisode
    */
-  fileprivate func updateEpisode (episode : APIEpisode, completion : @escaping (_ isSuccess : Bool, _ set : APIEpisode?) -> Void) {
+  fileprivate func updateEpisode (episode : APIEpisode, completion : @escaping (_ isSuccess : Bool, _ episode : APIEpisode?) -> Void) {
     
     /// Guard episode content URL
     guard episode.contentURL != "" else {
@@ -137,7 +142,7 @@ class API {
                                          position: episode.position,
                                          title: title,
                                          synopsis: synopsis,
-                                         imageURLs: imageURLs) //["/api/images/imag_fcdf67481d8147e6844d838f4112fcaa/", "/api/images/imag_fcdf67481d8147e6844d838f4112fcab/"])
+                                         imageURLs: imageURLs)
         
         // Get episode image URL
         guard let apiImageURL = newEpisode.imageURLs.first else {

@@ -11,7 +11,7 @@ import RealmSwift
 import SwiftyBeaver
 
 /**
- The Database class manages DB access including convenint methods for inserts, deletions and updates
+ The Database class manages DB access including convenient methods for inserts, deletions and updates
  */
 class Database {
   
@@ -152,7 +152,7 @@ class Database {
   }
   
   /**
-   Fetch from the default Realm
+   Fetch movies from the default Realm
    */
   fileprivate func fetchMovies(sorted sort : Bool) -> Results<Movie>? {
     
@@ -167,7 +167,7 @@ class Database {
   }
   
   /**
-   Fetch from the default Realm
+   Fetch episodes from the default Realm
    */
   func fetchRealmEpisodes(sorted sort : Bool) -> Results<Episode>? {
     

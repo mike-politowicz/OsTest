@@ -12,7 +12,7 @@ import RealmSwift
 import SwiftyBeaver
 
 /**
- Shows the list of Sets
+ Shows the list of Episodes
  */
 final class EpisodeListViewController : UIViewController {
   
@@ -34,9 +34,7 @@ final class EpisodeListViewController : UIViewController {
   /// The notification token for changes to the data objects
   fileprivate var notifications: NotificationToken?
   
-  /**
-   Setup the view
-   */
+  
   override func viewDidLoad() {
     super.viewDidLoad()
     
@@ -55,7 +53,6 @@ final class EpisodeListViewController : UIViewController {
   
   /**
    Setup loading
-   
    - parameter isLoading
    */
   fileprivate func setupLoading (isLoading : Bool) {
@@ -109,6 +106,9 @@ final class EpisodeListViewController : UIViewController {
     }
   }
   
+  /**
+   Fetches new remote data
+   */
   func refreshEpisodes() {
     Database.instance.fetchSets() { _ in
       Database.instance.fetchEpisodes(setTitle: "Home") { _ in
@@ -127,9 +127,8 @@ final class EpisodeListViewController : UIViewController {
 }
 
 
-/**
- Table View datasource
- */
+// MARK: - UITableViewDataSource
+
 extension EpisodeListViewController : UITableViewDataSource {
   
   func numberOfSections(in tableView: UITableView) -> Int {
@@ -157,16 +156,13 @@ extension EpisodeListViewController : UITableViewDataSource {
   }
   
   func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-    /// Default
     return 180.0
   }
   
 }
 
+// MARK: - UITableViewDelegate
 
-/**
- Table view delegate
- */
 extension EpisodeListViewController : UITableViewDelegate {
   
   func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

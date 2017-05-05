@@ -38,6 +38,9 @@ class EpisodeViewCell : UITableViewCell {
   // Image URL
   fileprivate var imageURLString: String = ""
   
+  /**
+   Sets UI elements based on episode parameters
+   */
   func configureWith(episode: Episode) {
     self.episode = episode
     lblTitle?.text = episode.title
@@ -59,6 +62,9 @@ class EpisodeViewCell : UITableViewCell {
     }
   }
   
+  /**
+   Sets favourite value for episode and updates UI
+   */
   @IBAction func btnFavouritePressed(_ sender: UIButton) {
     if let episode = episode {
       Database.instance.changeFavouriteFor(episode: episode, isFavourite: !episode.isFavourite)
